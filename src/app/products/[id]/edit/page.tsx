@@ -9,12 +9,8 @@ import { notFound } from "next/navigation";
 import ProductForm from "@/components/ProductForm";
 import { ArrowLeft, Pencil } from "lucide-react";
 
-export default async function EditProduct({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const { id } = params;
+export default async function EditProduct({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const p = await prisma.product.findUnique({ where: { id } });
   if (!p) notFound();
 
