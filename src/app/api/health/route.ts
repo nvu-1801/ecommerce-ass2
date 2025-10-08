@@ -1,15 +1,23 @@
-export const runtime = "nodejs";
-
+// app/api/health/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
+    // thay vì SELECT 1 với $queryRaw`SELECT 1` (Prisma >=5 dùng prisma.$queryRaw`SELECT 1`)
     await prisma.$queryRaw`SELECT 1`;
     return NextResponse.json({ ok: true });
-  } catch (e: unknown) {
-    const message = e instanceof Error ? e.message : "Unknown error";
-    console.error("HEALTH ERROR:", e); // xem ở Vercel → Functions logs
-    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+  } catch (e: any) {
+    // Trả chi tiết để debug (DEV mới nên giữ vậy)
+    return NextResponse.json(
+      {
+        ok: false,
+        name: e?.name,
+        code: e?.code,
+        message: e?.message,
+        stack: e?.stack?.split("\n").slice(0, 5).join("\n"),
+      },
+      { status: 500 },
+    );
   }
 }
