@@ -24,16 +24,22 @@ export default function AuthForm({ mode }: { mode: "signin" | "signup" }) {
   const [msg, setMsg] = useState<string | null>(null);
   const [confirmNotice, setConfirmNotice] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const router = useRouter();
   const sp = useSearchParams();
   // Chỉ cho phép relative redirect nội bộ
-  const redirectTo = sp.get("redirect")?.startsWith("/") ? sp.get("redirect")! : "/products";
+  const redirectTo = sp.get("redirect")?.startsWith("/")
+    ? sp.get("redirect")!
+    : "/products";
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setMsg(null);
     setConfirmNotice(null);
+    setLoading(true);
+    setError(null);
     const sb = supabaseBrowser();
 
     startTransition(async () => {
@@ -72,9 +78,12 @@ export default function AuthForm({ mode }: { mode: "signin" | "signup" }) {
         await sb.auth.refreshSession();
         router.replace(redirectTo);
         router.refresh();
-      } catch (err: any) {
-        setMsg(humanize(err?.message));
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : "Unknown error";
+        setError(msg);
         console.error("[auth]", err);
+      } finally {
+        setLoading(false);
       }
     });
   }
@@ -83,10 +92,11 @@ export default function AuthForm({ mode }: { mode: "signin" | "signup" }) {
     if (pending) return; // chặn double click
     const sb = supabaseBrowser();
     const origin = window.location.origin;
-    const next =
-      new URLSearchParams(window.location.search).get("redirect")?.startsWith("/")
-        ? new URLSearchParams(window.location.search).get("redirect")!
-        : "/home";
+    const next = new URLSearchParams(window.location.search)
+      .get("redirect")
+      ?.startsWith("/")
+      ? new URLSearchParams(window.location.search).get("redirect")!
+      : "/home";
 
     // Quan trọng: redirectTo phải đúng /callback và đã whitelisted
     const { data, error } = await sb.auth.signInWithOAuth({
@@ -95,7 +105,7 @@ export default function AuthForm({ mode }: { mode: "signin" | "signup" }) {
         redirectTo: `${origin}/callback?next=${encodeURIComponent(next)}`,
         // (tuỳ chọn) giúp user chọn account lại và xin refresh_token
         queryParams: {
-          prompt: "select_account",   // hoặc "consent"
+          prompt: "select_account", // hoặc "consent"
           access_type: "offline",
         },
         scopes: "openid email profile",
@@ -205,7 +215,11 @@ export default function AuthForm({ mode }: { mode: "signin" | "signup" }) {
         disabled={pending}
         className="w-full h-10 rounded-full bg-gray-900 hover:bg-black text-white transition disabled:opacity-60"
       >
-        {pending ? "Đang xử lý..." : mode === "signin" ? "Đăng nhập" : "Đăng ký"}
+        {pending
+          ? "Đang xử lý..."
+          : mode === "signin"
+          ? "Đăng nhập"
+          : "Đăng ký"}
       </button>
 
       {msg && (
