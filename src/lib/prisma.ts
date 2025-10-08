@@ -3,13 +3,20 @@ import { PrismaClient } from "@prisma/client";
 
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
+const isRender = !!process.env.RENDER;
+const isVercel = !!process.env.VERCEL;
+
+const runtimeUrl =
+  (isVercel && process.env.POOLER_DATABASE_URL) ||
+  (isRender && process.env.DIRECT_DATABASE_URL) ||
+  process.env.DATABASE_URL; // fallback
+
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
-    log: process.env.NODE_ENV === "development" ? ["warn", "error"] : ["error"],
-    datasources: {
-      db: { url: process.env.DATABASE_URL }, // 👈 ép dùng đúng URL có pgbouncer=true
-    },
+    datasources: { db: { url: runtimeUrl } },
+    log:
+      process.env.NODE_ENV === "development"
+        ? ["query", "error", "warn"]
+        : ["error"],
   });
-
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
