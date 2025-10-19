@@ -37,7 +37,7 @@ export default function AuthForm({ mode }: { mode: "signin" | "signup" }) {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setMsg(null);
-    setConfirmNotice(null);
+    setConfirmNotice(null); 
     setLoading(true);
     setError(null);
     const sb = supabaseBrowser();

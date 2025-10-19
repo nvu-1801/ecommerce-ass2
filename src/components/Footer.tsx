@@ -14,10 +14,13 @@ import {
   Clock,
   Globe,
   CreditCard,
-  Shirt,
+  ShoppingBag,
+  Sparkles,
+  Heart,
+  TrendingUp,
 } from "lucide-react";
 
-export default function Footer({ brand = "RunGear" }: { brand?: string }) {
+export default function Footer({ brand = "ShopStyle" }: { brand?: string }) {
   const [email, setEmail] = React.useState("");
   const [message, setMessage] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
@@ -37,9 +40,7 @@ export default function Footer({ brand = "RunGear" }: { brand?: string }) {
       return;
     }
     try {
-      // TODO: Gọi API của bạn nếu cần
-      // await fetch("/api/newsletter/subscribe", { method: "POST", body: JSON.stringify({ email }) });
-      setMessage("Đăng ký nhận ưu đãi & xu hướng mới thành công ✨");
+      setMessage("🎉 Đăng ký thành công! Chào mừng bạn đến với ShopStyle");
       setEmail("");
     } catch {
       setError("Có lỗi xảy ra. Vui lòng thử lại.");
@@ -54,146 +55,162 @@ export default function Footer({ brand = "RunGear" }: { brand?: string }) {
 
   const sections: { title: string; links: { label: string; href: string }[] }[] = [
     {
-      title: "Shop",
+      title: "Khám phá",
       links: [
-        { label: "New Arrivals", href: "/new" },
-        { label: "Best Sellers", href: "/trending" },
-        { label: "Sale", href: "/sale" },
-        { label: "Nam", href: "/men" },
-        { label: "Nữ", href: "/women" },
-        { label: "Trẻ em", href: "/kids" },
+        { label: "Sản phẩm mới", href: "/new" },
+        { label: "Bán chạy nhất", href: "/trending" },
+        { label: "Giảm giá", href: "/sale" },
+        { label: "Bộ sưu tập", href: "/collections" },
+        { label: "Xu hướng 2025", href: "/trends" },
       ],
     },
     {
-      title: "Discover",
+      title: "Dịch vụ",
       links: [
-        { label: "Lookbook", href: "/lookbook" },
-        { label: "Style Guide", href: "/style-guide" },
-        { label: "Size Guide", href: "/size-guide" },
-        { label: "Fabric Care", href: "/care" },
-        { label: "Blog thời trang", href: "/blog" },
-      ],
-    },
-    {
-      title: "Support",
-      links: [
-        { label: "Vận chuyển & Thanh toán", href: "/shipping-payment" },
+        { label: "Hướng dẫn đặt hàng", href: "/guide" },
         { label: "Theo dõi đơn hàng", href: "/orders/track" },
-        { label: "Đổi trả & Hoàn tiền", href: "/refund" },
-        { label: "Bảo hành", href: "/warranty" },
-        { label: "FAQ", href: "/faq" },
+        { label: "Chính sách đổi trả", href: "/refund" },
+        { label: "Bảo hành sản phẩm", href: "/warranty" },
+        { label: "Câu hỏi thường gặp", href: "/faq" },
       ],
     },
     {
-      title: "Company",
+      title: "Về chúng tôi",
       links: [
-        { label: "Về chúng tôi", href: "/about" },
+        { label: "Câu chuyện thương hiệu", href: "/about" },
         { label: "Hệ thống cửa hàng", href: "/stores" },
         { label: "Tuyển dụng", href: "/careers" },
+        { label: "Blog thời trang", href: "/blog" },
         { label: "Liên hệ", href: "/contact" },
       ],
     },
   ];
 
   return (
-    <footer className="mt-16 border-t bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:bg-neutral-950/80 dark:border-neutral-800">
-      {/* Accent line */}
-      <div className="h-[3px] w-full bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-emerald-500" />
+    <footer className="relative mt-20 overflow-hidden bg-gradient-to-br from-slate-50 via-white to-violet-50">
+      {/* Decorative elements */}
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-600 via-fuchsia-500 to-pink-500"></div>
+      <div className="absolute -top-32 -right-32 w-64 h-64 bg-gradient-to-br from-violet-200 to-fuchsia-200 rounded-full blur-3xl opacity-30"></div>
+      <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-gradient-to-br from-pink-200 to-violet-200 rounded-full blur-3xl opacity-30"></div>
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-10 py-12 md:grid-cols-3 lg:grid-cols-4">
-          {/* Brand + subscribe */}
-          <div className="md:col-span-1">
-            <div className="flex items-center gap-2">
-              <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-indigo-500 via-fuchsia-500 to-emerald-500 text-white shadow">
-                <Shirt className="h-5 w-5" />
+      <div className="relative mx-auto max-w-7xl px-6 py-16">
+        {/* Top section - Newsletter & Brand */}
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 mb-16">
+          {/* Brand info */}
+          <div>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-violet-600 to-fuchsia-600 rounded-2xl blur-lg opacity-60"></div>
+                <div className="relative bg-gradient-to-br from-violet-600 to-fuchsia-600 p-3 rounded-2xl">
+                  <ShoppingBag size={28} className="text-white" strokeWidth={2.5} />
+                </div>
               </div>
               <div>
-                <h3 className="text-lg font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+                <h3 className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
                   {brand}
                 </h3>
-                <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                  Thời trang mỗi ngày – mặc đẹp, tự tin hơn.
-                </p>
+                <p className="text-sm text-gray-600 font-medium">Modern Fashion for Everyone</p>
               </div>
             </div>
 
-            <form onSubmit={onSubscribe} className="mt-6 space-y-3">
-              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                Nhận ưu đãi & xu hướng mới
-              </label>
-              <div className="flex overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm ring-1 ring-transparent focus-within:ring-indigo-400 dark:border-neutral-800 dark:bg-neutral-900">
-                <div className="grid place-items-center px-3 text-neutral-500">
-                  <Mail className="h-4 w-4" />
-                </div>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@mail.com"
-                  className="w-full bg-transparent px-3 py-2 outline-none placeholder:text-neutral-400"
-                  aria-label="Email"
-                />
-                <button
-                  type="submit"
-                  className="rounded-l-none bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-black dark:bg-neutral-200 dark:text-neutral-900 dark:hover:bg-white"
-                >
-                  Đăng ký
-                </button>
-              </div>
-              {message && <p className="text-xs text-emerald-600">{message}</p>}
-              {error && <p className="text-xs text-rose-600">{error}</p>}
-            </form>
+            <p className="text-gray-600 mb-6 leading-relaxed">
+              Nơi phong cách gặp gỡ chất lượng. Khám phá bộ sưu tập thời trang hiện đại,
+              độc đáo và luôn cập nhật xu hướng mới nhất.
+            </p>
 
-            {/* Socials */}
-            <div className="mt-6 flex items-center gap-3 text-neutral-600 dark:text-neutral-400">
-              <a
-                href="#"
-                aria-label="Facebook"
-                className="rounded-full border p-2 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-900"
-                rel="noopener"
-              >
-                <Facebook className="h-4 w-4" />
-              </a>
-              <a
-                href="#"
-                aria-label="Instagram"
-                className="rounded-full border p-2 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-900"
-                rel="noopener"
-              >
-                <Instagram className="h-4 w-4" />
-              </a>
-              <a
-                href="#"
-                aria-label="Twitter"
-                className="rounded-full border p-2 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-900"
-                rel="noopener"
-              >
-                <Twitter className="h-4 w-4" />
-              </a>
-              <a
-                href="#"
-                aria-label="YouTube"
-                className="rounded-full border p-2 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-900"
-                rel="noopener"
-              >
-                <Youtube className="h-4 w-4" />
-              </a>
+            {/* Social icons */}
+            <div className="flex items-center gap-3">
+              {[{
+                Icon: Facebook,
+                color: "from-blue-500 to-blue-600",
+                href: "#",
+              },
+              {
+                Icon: Instagram,
+                color: "from-pink-500 to-purple-600",
+                href: "#",
+              },
+              {
+                Icon: Twitter,
+                color: "from-sky-400 to-blue-500",
+                href: "#",
+              },
+              {
+                Icon: Youtube,
+                color: "from-red-500 to-red-600",
+                href: "#",
+              },]
+            .map(({ Icon, color, href }, idx) => (
+                <a
+                  key={idx}
+                  href={href}
+                  className={`group relative p-3 rounded-xl bg-white border border-gray-200 hover:border-transparent shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1`}
+                >
+                  <div className={`absolute inset-0 bg-gradient-to-br ${color} rounded-xl opacity-0 group-hover:opacity-100 transition-opacity`}></div>
+                  <Icon className="relative h-5 w-5 text-gray-600 group-hover:text-white transition-colors" />
+                </a>
+              ))}
             </div>
           </div>
 
-          {/* Link sections */}
+          {/* Newsletter */}
+          <div className="lg:pl-12">
+            <div className="bg-gradient-to-br from-violet-600 to-fuchsia-600 rounded-3xl p-8 text-white shadow-2xl shadow-violet-500/30">
+              <div className="flex items-center gap-2 mb-4">
+                <Sparkles className="h-6 w-6" />
+                <h4 className="text-xl font-bold">Nhận ưu đãi đặc biệt</h4>
+              </div>
+              <p className="text-violet-100 mb-6">
+                Đăng ký ngay để nhận mã giảm giá 15% cho đơn hàng đầu tiên và cập nhật xu hướng mới nhất!
+              </p>
+
+              <form onSubmit={onSubscribe} className="space-y-3">
+                <div className="flex gap-2">
+                  <div className="flex-1 flex items-center gap-3 bg-white/20 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/30 focus-within:bg-white/30 transition">
+                    <Mail className="h-5 w-5 text-white/80" />
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="email@example.com"
+                      className="flex-1 bg-transparent outline-none text-white placeholder:text-white/60"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="px-6 py-3 bg-white text-violet-600 font-bold rounded-xl hover:bg-violet-50 hover:shadow-xl transition-all duration-200 hover:scale-105"
+                  >
+                    Đăng ký
+                  </button>
+                </div>
+                {message && (
+                  <p className="text-sm text-white bg-white/20 rounded-lg px-4 py-2 backdrop-blur-sm">
+                    {message}
+                  </p>
+                )}
+                {error && (
+                  <p className="text-sm text-red-200 bg-red-500/20 rounded-lg px-4 py-2 backdrop-blur-sm">
+                    {error}
+                  </p>
+                )}
+              </form>
+            </div>
+          </div>
+        </div>
+
+        {/* Links sections */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 mb-12">
           {sections.map((sec) => (
-            <nav key={sec.title} aria-label={sec.title} className="md:col-span-1">
-              <h4 className="text-sm font-semibold uppercase tracking-wide text-neutral-700 dark:text-neutral-300">
+            <nav key={sec.title}>
+              <h4 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">
                 {sec.title}
               </h4>
-              <ul className="mt-4 space-y-2">
+              <ul className="space-y-3">
                 {sec.links.map((l) => (
                   <li key={l.href}>
                     <Link
                       href={l.href}
-                      className="text-neutral-600 transition hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+                      className="text-gray-600 hover:text-violet-600 transition-colors text-sm font-medium hover:translate-x-1 inline-block duration-200"
                     >
                       {l.label}
                     </Link>
@@ -202,82 +219,103 @@ export default function Footer({ brand = "RunGear" }: { brand?: string }) {
               </ul>
             </nav>
           ))}
+
+          {/* Contact info */}
+          <div className="col-span-2 md:col-span-3 lg:col-span-3 space-y-4">
+            <h4 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">
+              Liên hệ
+            </h4>
+            <div className="space-y-3">
+              <div className="flex items-start gap-3 text-sm">
+                <MapPin className="h-5 w-5 text-violet-600 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-gray-900">Cửa hàng chính</p>
+                  <p className="text-gray-600">123 Nguyễn Trãi, Q.1, TP.HCM</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 text-sm">
+                <Phone className="h-5 w-5 text-violet-600 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-gray-900">Hotline</p>
+                  <p className="text-gray-600">1900 0000 (8:00 - 22:00)</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 text-sm">
+                <Mail className="h-5 w-5 text-violet-600 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-gray-900">Email</p>
+                  <p className="text-gray-600">support@shopstyle.vn</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Info strip */}
-        <div className="grid grid-cols-1 gap-6 rounded-2xl border bg-white/60 p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900/60 md:grid-cols-3">
-          <div className="flex items-start gap-3">
-            <MapPin className="mt-0.5 h-5 w-5 text-neutral-500" />
+        {/* Payment methods */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 mb-8">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div>
-              <div className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">Cửa hàng</div>
-              <div className="text-sm text-neutral-600 dark:text-neutral-400">
-                123 Nguyễn Trãi, Quận 1, TP.HCM
+              <h5 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+                <CreditCard className="h-4 w-4 text-violet-600" />
+                Phương thức thanh toán
+              </h5>
+              <div className="flex flex-wrap gap-2">
+                {["VISA", "Mastercard", "JCB", "VNPay", "Momo", "ZaloPay", "COD"].map((method) => (
+                  <span
+                    key={method}
+                    className="px-3 py-1.5 bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-lg text-xs font-semibold text-gray-700 hover:shadow-md transition-shadow"
+                  >
+                    {method}
+                  </span>
+                ))}
               </div>
             </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <Phone className="mt-0.5 h-5 w-5 text-neutral-500" />
-            <div>
-              <div className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">Hỗ trợ</div>
-              <div className="text-sm text-neutral-600 dark:text-neutral-400">
-                (+84) 900 000 000 · hello@{brand.toLowerCase()}.com
-              </div>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <Clock className="mt-0.5 h-5 w-5 text-neutral-500" />
-            <div>
-              <div className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">Giờ làm việc</div>
-              <div className="text-sm text-neutral-600 dark:text-neutral-400">
-                T2–T6 9:00–18:00 · T7 9:00–12:00
-              </div>
-            </div>
-          </div>
-        </div>
 
-        {/* Selectors & payments */}
-        <div className="mt-6 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 rounded-xl border bg-white px-3 py-2 text-sm shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-              <Globe className="h-4 w-4 text-neutral-500" />
-              <select className="bg-transparent outline-none" aria-label="Ngôn ngữ">
-                <option>Tiếng Việt</option>
-                <option>English</option>
-              </select>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-2 border border-gray-200">
+                <Globe className="h-4 w-4 text-gray-600" />
+                <select className="bg-transparent outline-none text-sm font-medium text-gray-700">
+                  <option>Tiếng Việt</option>
+                  <option>English</option>
+                </select>
+              </div>
+              <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-2 border border-gray-200">
+                <TrendingUp className="h-4 w-4 text-gray-600" />
+                <select className="bg-transparent outline-none text-sm font-medium text-gray-700">
+                  <option>VND (₫)</option>
+                  <option>USD ($)</option>
+                </select>
+              </div>
             </div>
-            <div className="flex items-center gap-2 rounded-xl border bg-white px-3 py-2 text-sm shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-              <CreditCard className="h-4 w-4 text-neutral-500" />
-              <select className="bg-transparent outline-none" aria-label="Tiền tệ">
-                <option>VND (₫)</option>
-                <option>USD ($)</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-600 dark:text-neutral-400">
-            <span className="rounded-md border px-2 py-1 dark:border-neutral-700">VISA</span>
-            <span className="rounded-md border px-2 py-1 dark:border-neutral-700">Mastercard</span>
-            <span className="rounded-md border px-2 py-1 dark:border-neutral-700">JCB</span>
-            <span className="rounded-md border px-2 py-1 dark:border-neutral-700">VNPay</span>
-            <span className="rounded-md border px-2 py-1 dark:border-neutral-700">Momo</span>
-            <span className="rounded-md border px-2 py-1 dark:border-neutral-700">ZaloPay</span>
-            <span className="rounded-md border px-2 py-1 dark:border-neutral-700">COD</span>
           </div>
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-8 flex flex-col items-start justify-between gap-4 border-t py-6 text-sm text-neutral-600 dark:border-neutral-800 dark:text-neutral-400 md:flex-row md:items-center">
-          <p>© {year} {brand}. All rights reserved.</p>
-          <div className="flex flex-wrap items-center gap-4">
-            <Link href="/privacy" className="hover:text-neutral-900 dark:hover:text-neutral-100">Privacy</Link>
-            <Link href="/terms" className="hover:text-neutral-900 dark:hover:text-neutral-100">Terms</Link>
-            <Link href="/cookies" className="hover:text-neutral-900 dark:hover:text-neutral-100">Cookies</Link>
-            <button
-              onClick={scrollToTop}
-              className="inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-neutral-700 transition hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-900"
-            >
-              <ArrowUp className="h-4 w-4" /> Lên đầu trang
-            </button>
+        <div className="pt-8 border-t border-gray-200">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-sm text-gray-600 flex items-center gap-1">
+              © {year} {brand}. Made with{" "}
+              <Heart className="h-4 w-4 text-red-500 fill-red-500" /> in Vietnam
+            </p>
+
+            <div className="flex flex-wrap items-center gap-6">
+              <Link href="/privacy" className="text-sm text-gray-600 hover:text-violet-600 transition">
+                Privacy Policy
+              </Link>
+              <Link href="/terms" className="text-sm text-gray-600 hover:text-violet-600 transition">
+                Terms of Service
+              </Link>
+              <Link href="/cookies" className="text-sm text-gray-600 hover:text-violet-600 transition">
+                Cookie Policy
+              </Link>
+              <button
+                onClick={scrollToTop}
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-violet-500/30 transition-all duration-200 hover:-translate-y-0.5"
+              >
+                <ArrowUp className="h-4 w-4" />
+                Lên đầu trang
+              </button>
+            </div>
           </div>
         </div>
       </div>
