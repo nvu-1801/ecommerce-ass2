@@ -6,9 +6,6 @@ export const runtime = "nodejs";
 import type React from "react";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import SafeImage from "@/components/SafeImage";
-import NeedsLoginButton from "@/components/NeedsLoginButton";
-import { supabaseServer } from "@/lib/supabase/supabase-server";
 import Footer from "@/components/Footer";
 import {
   Search,
@@ -21,6 +18,10 @@ import {
   ChevronDown,
 } from "lucide-react";
 import type { Prisma } from "@prisma/client";
+import { supabaseServer } from "@/lib/supabase/supabase-server";
+import NeedsLoginButton from "@/components/NeedsLoginButton";
+import ProductGrid from "@/components/products/ProductGrid";
+import EmptyState from "@/components/products/EmptyState";
 
 // ---- UI types (giá trị hiển thị) ----
 type ProductCard = {
@@ -74,7 +75,7 @@ export default async function ProductsPage(props: {
     // Build where clause
     const where: Prisma.ProductWhereInput = {};
 
-// Search by name
+    // Search by name
     if (q) {
       where.name = { contains: q, mode: "insensitive" as const };
     }
@@ -191,7 +192,8 @@ export default async function ProductsPage(props: {
                       <>
                         {" • "}
                         <span className="italic text-violet-600">
-                          kết quả cho {"\""} {q}{"\""} 
+                          kết quả cho {'"'} {q}
+                          {'"'}
                         </span>
                       </>
                     )}
@@ -201,134 +203,16 @@ export default async function ProductsPage(props: {
             </div>
           </div>
 
-          {/* Toolbar: search + filters + actions */}
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-6">
-            <form action="/products" className="space-y-4">
-              {/* Search bar */}
-              <div className="flex flex-col md:flex-row gap-3">
-                <div className="flex-1 relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <input
-                    type="text"
-                    name="q"
-                    defaultValue={q}
-                    placeholder="Tìm kiếm sản phẩm theo tên..."
-                    className="w-full rounded-xl border-2 border-gray-200 bg-gray-50 pl-12 pr-4 py-3 outline-none focus:border-violet-500 focus:bg-white focus:ring-4 focus:ring-violet-100 transition-all duration-200"
-                  />
-                </div>
-                <div className="flex gap-3">
-                  <button
-                    type="submit"
-                    className="px-6 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold hover:from-violet-700 hover:to-fuchsia-700 shadow-lg shadow-violet-500/30 hover:shadow-xl hover:shadow-violet-500/40 transition-all duration-200 hover:-translate-y-0.5"
-                  >
-                    Tìm kiếm
-                  </button>
-                  {(q || hasActiveFilters) && (
-                    <Link
-                      href="/products"
-                      className="px-6 py-3 rounded-xl border-2 border-gray-200 bg-white text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 flex items-center gap-2"
-                    >
-                      <X className="h-4 w-4" />
-                      Xóa bộ lọc
-                    </Link>
-                  )}
-                  {isAuthed ? (
-                    <Link
-                      href="/products/new"
-                      className="px-6 py-3 rounded-xl bg-black text-white font-semibold hover:bg-gray-900 shadow-lg shadow-black/10 hover:shadow-xl hover:shadow-black/20 transition-all duration-200 hover:-translate-y-0.5 flex items-center gap-2"
-                    >
-                      <Plus className="h-5 w-5" strokeWidth={2.5} />
-                      <span className="hidden sm:inline">Thêm mới</span>
-                    </Link>
-                  ) : (
-                    <NeedsLoginButton
-                      label="Thêm mới"
-                      className="px-6 py-3 rounded-xl bg-black text-white font-semibold hover:bg-gray-900 shadow-lg shadow-black/10 hover:shadow-xl hover:shadow-black/20 transition-all duration-200 flex items-center gap-2"
-                      message="Bạn cần đăng nhập để tạo sản phẩm mới."
-                      goTo="/signin"
-                    />
-                  )}
-                </div>
-              </div>
-
-              {/* Filters */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-3 pt-4 border-t border-gray-100">
-                {/* Sort */}
-                <div className="relative">
-                  <label className="block text-xs font-bold text-gray-700 mb-1.5 flex items-center gap-1.5">
-                    <SlidersHorizontal className="h-3.5 w-3.5" />
-                    Sắp xếp
-                  </label>
-                  <div className="relative">
-                    <select
-                      name="sort"
-                      defaultValue={sort}
-                      className="w-full rounded-lg border-2 border-gray-200 bg-gray-50 px-3 py-2 pr-8 text-sm font-medium outline-none focus:border-violet-500 focus:bg-white focus:ring-4 focus:ring-violet-100 transition-all duration-200 appearance-none cursor-pointer"
-                    >
-                      <option value="newest">Mới nhất</option>
-                      <option value="oldest">Cũ nhất</option>
-                      <option value="price-asc">Giá thấp → cao</option>
-                      <option value="price-desc">Giá cao → thấp</option>
-                      <option value="name">Tên A → Z</option>
-                    </select>
-                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                  </div>
-                </div>
-
-                {/* Min Price */}
-                <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                    Giá từ (VND)
-                  </label>
-                  <input
-                    type="number"
-                    name="minPrice"
-                    defaultValue={minPrice}
-                    placeholder="0"
-                    min="0"
-                    step="1000"
-                    className="w-full rounded-lg border-2 border-gray-200 bg-gray-50 px-3 py-2 text-sm font-medium outline-none focus:border-violet-500 focus:bg-white focus:ring-4 focus:ring-violet-100 transition-all duration-200"
-                  />
-                </div>
-
-                {/* Max Price */}
-                <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                    Giá đến (VND)
-                  </label>
-                  <input
-                    type="number"
-                    name="maxPrice"
-                    defaultValue={maxPrice}
-                    placeholder="Không giới hạn"
-                    min="0"
-                    step="1000"
-                    className="w-full rounded-lg border-2 border-gray-200 bg-gray-50 px-3 py-2 text-sm font-medium outline-none focus:border-violet-500 focus:bg-white focus:ring-4 focus:ring-violet-100 transition-all duration-200"
-                  />
-                </div>
-
-                {/* Date Filter */}
-                <div className="relative">
-                  <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                    Ngày tạo
-                  </label>
-                  <div className="relative">
-                    <select
-                      name="dateFilter"
-                      defaultValue={dateFilter}
-                      className="w-full rounded-lg border-2 border-gray-200 bg-gray-50 px-3 py-2 pr-8 text-sm font-medium outline-none focus:border-violet-500 focus:bg-white focus:ring-4 focus:ring-violet-100 transition-all duration-200 appearance-none cursor-pointer"
-                    >
-                      <option value="all">Tất cả</option>
-                      <option value="today">Hôm nay</option>
-                      <option value="week">7 ngày qua</option>
-                      <option value="month">30 ngày qua</option>
-                    </select>
-                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                  </div>
-                </div>
-              </div>
-            </form>
-          </div>
+          {/* Toolbar */}
+          <ProductsToolbar
+            q={q}
+            sort={sort}
+            minPrice={minPrice}
+            maxPrice={maxPrice}
+            dateFilter={dateFilter}
+            isAuthed={isAuthed}
+            hasActiveFilters={hasActiveFilters}
+          />
 
           {/* Active Filters tags */}
           {hasActiveFilters && (
@@ -372,111 +256,15 @@ export default async function ProductsPage(props: {
 
           {/* Empty state / Grid */}
           {data.length === 0 ? (
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-16 text-center">
-              <div className="inline-flex p-6 rounded-3xl bg-gradient-to-br from-violet-100 to-fuchsia-100 mb-6">
-                <Sparkles className="h-12 w-12 text-violet-600" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Không tìm thấy sản phẩm
-              </h2>
-              <p className="text-gray-600 mb-8">
-                {q || hasActiveFilters
-                  ? "Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm."
-                  : "Hãy tạo sản phẩm đầu tiên để bắt đầu bán hàng."}
-              </p>
-              <div className="flex justify-center gap-3">
-                {(q || hasActiveFilters) && (
-                  <Link
-                    href="/products"
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border-2 border-gray-200 bg-white text-gray-700 font-semibold hover:bg-gray-50 transition-all duration-200"
-                  >
-                    <X className="h-4 w-4" />
-                    Xóa bộ lọc
-                  </Link>
-                )}
-                {isAuthed ? (
-                  <Link
-                    href="/products/new"
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold hover:from-violet-700 hover:to-fuchsia-700 shadow-lg shadow-violet-500/30 transition-all duration-200"
-                  >
-                    <Plus className="h-5 w-5" />
-                    Tạo sản phẩm
-                  </Link>
-                ) : (
-                  <NeedsLoginButton
-                    label="Tạo sản phẩm"
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold hover:from-violet-700 hover:to-fuchsia-700 shadow-lg shadow-violet-500/30 transition-all duration-200"
-                    message="Bạn cần đăng nhập để tạo sản phẩm mới."
-                    goTo="/signin"
-                  />
-                )}
-              </div>
-            </div>
+            <EmptyState
+              q={q}
+              hasActiveFilters={hasActiveFilters}
+              isAuthed={isAuthed}
+            />
           ) : (
             <>
-              {/* Grid */}
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {data.map((p) => (
-                  <Link
-                    key={p.id}
-                    href={`/products/${p.id}`}
-                    className="group relative overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-                  >
-                    {/* Image */}
-                    <div className="aspect-[4/5] w-full overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 relative">
-                      {p.image ? (
-                        <>
-                          <SafeImage
-                            src={p.image}
-                            alt={p.name}
-                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                        </>
-                      ) : (
-                        <div className="h-full w-full grid place-items-center">
-                          <div className="text-center">
-                            <ShoppingBag className="h-12 w-12 text-gray-300 mx-auto mb-2" />
-                            <span className="text-sm text-gray-400 font-medium">
-                              No Image
-                            </span>
-                          </div>
-                        </div>
-                      )}
+              <ProductGrid data={data} toVND={toVND} />
 
-                      {/* Badge NEW (nếu mới tạo trong 7 ngày) */}
-                      {new Date().getTime() - p.createdAt.getTime() <
-                        7 * 24 * 60 * 60 * 1000 && (
-                        <div className="absolute top-3 right-3">
-                          <span className="px-3 py-1 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-xs font-bold shadow-lg">
-                            MỚI
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Body */}
-                    <div className="p-5">
-                      <h3 className="text-base font-bold text-gray-900 line-clamp-1 mb-2 group-hover:text-violet-600 transition-colors">
-                        {p.name}
-                      </h3>
-                      <p className="text-sm text-gray-600 line-clamp-2 mb-4 leading-relaxed">
-                        {p.description || "Chưa có mô tả"}
-                      </p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-lg font-bold bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
-                          {toVND(p.price)}
-                        </span>
-                        <span className="px-3 py-1.5 rounded-lg bg-violet-50 text-violet-600 text-xs font-semibold group-hover:bg-gradient-to-r group-hover:from-violet-600 group-hover:to-fuchsia-600 group-hover:text-white transition-all">
-                          Xem chi tiết
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-
-              {/* Pagination */}
               {totalPages > 1 && (
                 <div className="mt-12 flex items-center justify-center">
                   <Pagination
@@ -634,4 +422,147 @@ function getCompactPages(current: number, total: number): (number | "…")[] {
     l = i;
   }
   return rangeWithDots;
+}
+
+/** ---------- Toolbar: search + filters + actions ---------- */
+function ProductsToolbar({
+  q,
+  sort,
+  minPrice,
+  maxPrice,
+  dateFilter,
+  isAuthed,
+  hasActiveFilters,
+}: {
+  q?: string;
+  sort?: string;
+  minPrice?: number | undefined;
+  maxPrice?: number | undefined;
+  dateFilter?: string;
+  isAuthed: boolean;
+  hasActiveFilters: boolean;
+}) {
+  return (
+    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-6">
+      <form action="/products" className="space-y-4">
+        <div className="flex flex-col md:flex-row gap-3">
+          <div className="flex-1 relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <input
+              type="text"
+              name="q"
+              defaultValue={q}
+              placeholder="Tìm kiếm sản phẩm theo tên..."
+              className="w-full rounded-xl border-2 border-gray-200 bg-gray-50 pl-12 pr-4 py-3 outline-none focus:border-violet-500 focus:bg-white focus:ring-4 focus:ring-violet-100 transition-all duration-200"
+            />
+          </div>
+          <div className="flex gap-3">
+            <button
+              type="submit"
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold hover:from-violet-700 hover:to-fuchsia-700 shadow-lg shadow-violet-500/30 hover:shadow-xl hover:shadow-violet-500/40 transition-all duration-200 hover:-translate-y-0.5"
+            >
+              Tìm kiếm
+            </button>
+            {(q || hasActiveFilters) && (
+              <Link
+                href="/products"
+                className="px-6 py-3 rounded-xl border-2 border-gray-200 bg-white text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 flex items-center gap-2"
+              >
+                <X className="h-4 w-4" />
+                Xóa bộ lọc
+              </Link>
+            )}
+            {isAuthed ? (
+              <Link
+                href="/products/new"
+                className="px-6 py-3 rounded-xl bg-black text-white font-semibold hover:bg-gray-900 shadow-lg shadow-black/10 hover:shadow-xl hover:shadow-black/20 transition-all duration-200 hover:-translate-y-0.5 flex items-center gap-2"
+              >
+                <Plus className="h-5 w-5" strokeWidth={2.5} />
+                <span className="hidden sm:inline">Thêm mới</span>
+              </Link>
+            ) : (
+              <NeedsLoginButton
+                label="Thêm mới"
+                className="px-6 py-3 rounded-xl bg-black text-white font-semibold hover:bg-gray-900 shadow-lg shadow-black/10 hover:shadow-xl hover-black/20 transition-all duration-200 flex items-center gap-2"
+                message="Bạn cần đăng nhập để tạo sản phẩm mới."
+                goTo="/signin"
+              />
+            )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 pt-4 border-t border-gray-100">
+          <div className="relative">
+            <label className="block text-xs font-bold text-gray-700 mb-1.5 flex items-center gap-1.5">
+              <SlidersHorizontal className="h-3.5 w-3.5" />
+              Sắp xếp
+            </label>
+            <div className="relative">
+              <select
+                name="sort"
+                defaultValue={sort}
+                className="w-full rounded-lg border-2 border-gray-200 bg-gray-50 px-3 py-2 pr-8 text-sm font-medium outline-none focus:border-violet-500 focus:bg-white focus:ring-4 focus:ring-violet-100 transition-all duration-200 appearance-none cursor-pointer"
+              >
+                <option value="newest">Mới nhất</option>
+                <option value="oldest">Cũ nhất</option>
+                <option value="price-asc">Giá thấp → cao</option>
+                <option value="price-desc">Giá cao → thấp</option>
+                <option value="name">Tên A → Z</option>
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1.5">
+              Giá từ (VND)
+            </label>
+            <input
+              type="number"
+              name="minPrice"
+              defaultValue={minPrice ?? ""}
+              placeholder="0"
+              min="0"
+              step="1000"
+              className="w-full rounded-lg border-2 border-gray-200 bg-gray-50 px-3 py-2 text-sm font-medium outline-none focus:border-violet-500 focus:bg-white focus:ring-4 focus:ring-violet-100 transition-all duration-200"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1.5">
+              Giá đến (VND)
+            </label>
+            <input
+              type="number"
+              name="maxPrice"
+              defaultValue={maxPrice ?? ""}
+              placeholder="Không giới hạn"
+              min="0"
+              step="1000"
+              className="w-full rounded-lg border-2 border-gray-200 bg-gray-50 px-3 py-2 text-sm font-medium outline-none focus:border-violet-500 focus:bg-white focus:ring-4 focus:ring-violet-100 transition-all duration-200"
+            />
+          </div>
+
+          <div className="relative">
+            <label className="block text-xs font-bold text-gray-700 mb-1.5">
+              Ngày tạo
+            </label>
+            <div className="relative">
+              <select
+                name="dateFilter"
+                defaultValue={dateFilter}
+                className="w-full rounded-lg border-2 border-gray-200 bg-gray-50 px-3 py-2 pr-8 text-sm font-medium outline-none focus:border-violet-500 focus:bg-white focus:ring-4 focus:ring-violet-100 transition-all duration-200 appearance-none cursor-pointer"
+              >
+                <option value="all">Tất cả</option>
+                <option value="today">Hôm nay</option>
+                <option value="week">7 ngày qua</option>
+                <option value="month">30 ngày qua</option>
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  );
 }

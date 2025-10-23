@@ -22,7 +22,10 @@ import {
   BadgeCheck,
   Heart,
   Share2,
+  FileText,
 } from "lucide-react";
+import { ShoppingCart, Check } from "lucide-react";
+import AddToCartButton from "@/components/cart/AddToCartButton";
 
 const formatVND = (n: number) =>
   Number(n).toLocaleString("vi-VN", { style: "currency", currency: "VND" });
@@ -33,8 +36,8 @@ export default async function ProductDetail({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-
   const p = await prisma.product.findUnique({ where: { id } });
+  
   if (!p) {
     return (
       <div className="min-h-[60vh] grid place-items-center bg-gradient-to-br from-slate-50 via-white to-violet-50">
@@ -201,28 +204,49 @@ export default async function ProductDetail({
           <div className="space-y-6">
             {/* Title & Price */}
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
+              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-emerald-700 text-xs font-medium mb-3">
+                <ShieldCheck className="h-3.5 w-3.5" />
+                Sản phẩm chính hãng
+              </div>
+              
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
                 {p.name}
               </h1>
 
-              <div className="inline-flex items-baseline gap-3 px-6 py-4 rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 shadow-2xl shadow-violet-500/30">
-                <span className="text-white/90 text-sm font-medium">
-                  Giá bán
-                </span>
-                <span className="text-3xl md:text-4xl font-bold text-white tracking-tight">
+              <div className="inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-6 py-3 shadow-lg mb-6">
+                <span className="text-sm text-white/90">Giá bán</span>
+                <span className="text-2xl font-bold text-white">
                   {formatVND(Number(p.price))}
                 </span>
               </div>
             </div>
 
+            {/* Add to Cart Button - Large */}
+            <div className="space-y-3">
+              <AddToCartButton
+                product={{
+                  id: p.id,
+                  name: p.name,
+                  price: Number(p.price),
+                  image: p.image,
+                }}
+                variant="large"
+                className="w-full"
+              />
+              
+              <p className="text-xs text-gray-500 text-center">
+                ✨ Miễn phí vận chuyển cho đơn hàng trên 500.000đ
+              </p>
+            </div>
+
             {/* Description */}
             <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-                <Tag className="h-5 w-5 text-violet-600" />
+              <h2 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                <FileText className="h-5 w-5 text-violet-600" />
                 Mô tả sản phẩm
               </h2>
               <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                {p.description || "Chưa có mô tả chi tiết cho sản phẩm này."}
+                {p.description || "Chưa có mô tả chi tiết."}
               </p>
             </div>
 
@@ -338,6 +362,26 @@ export default async function ProductDetail({
           )}
         </div>
       </div>
-    </div>
+
+      {/* Add to Cart Button - Always visible at the bottom */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 border-t bg-white shadow-md"></div>
+        <div className="mx-auto max-w-7xl px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-500">
+              {/* You can add any additional info here, like estimated delivery time, etc. */}
+            </div>
+            <AddToCartButton
+              product={{
+                id: p.id,
+                name: p.name,
+                price: Number(p.price),
+                image: p.image,
+              }}
+              className="w-full sm:w-auto"
+              variant="large"
+            />
+          </div>
+        </div>
+      </div>
   );
 }

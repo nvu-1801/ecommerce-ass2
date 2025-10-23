@@ -1,23 +1,206 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
-   relationMode = "prisma"
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
+  directUrl    = env("DIRECT_URL")
+  relationMode = "prisma"
 }
 
+// ==================== PRODUCT ====================
 model Product {
   id          String   @id @default(cuid())
   name        String   @db.VarChar(120)
   description String   @db.Text
-  // Dùng Decimal để lưu tiền tệ chính xác (không dùng float)
   price       Decimal  @db.Decimal(10, 2)
   image       String?  @db.Text
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  // Relations
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+
   @@index([name])
+  @@index([createdAt])
+}
+
+// ==================== USER ====================
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  carts     Cart[]
+  orders    Order[]
+  addresses Address[]
+
+  @@index([email])
+}
+
+// ==================== ADDRESS ====================
+model Address {
+  id          String  @id @default(cuid())
+  userId      String
+  name        String  @db.VarChar(100) // "Nhà riêng", "Văn phòng"
+  fullName    String  @db.VarChar(100)
+  phone       String  @db.VarChar(20)
+  address     String  @db.Text
+  isDefault   Boolean @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders Order[]
+
+  @@index([userId])
+  @@index([isDefault])
+}
+
+// ==================== CART ====================
+model Cart {
+  id        String   @id @default(cuid())
+  userId    String?  // Null = guest cart (dùng sessionId thay thế)
+  sessionId String?  // For guest users
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user  User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+
+  @@unique([userId]) // Mỗi user chỉ có 1 cart
+  @@index([sessionId])
+  @@index([userId])
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  productId String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, productId]) // Không trùng product trong 1 cart
+  @@index([cartId])
+  @@index([productId])
+}
+
+// ==================== ORDER ====================
+model Order {
+  id        String      @id @default(cuid())
+  userId    String
+  addressId String
+  
+  // Order details
+  orderNumber String   @unique @default(cuid()) // ORD123456
+  status      OrderStatus @default(PENDING)
+  
+  // Payment
+  paymentMethod String  @db.VarChar(50) // "cod", "momo", "zalopay", etc.
+  paymentStatus PaymentStatus @default(UNPAID)
+  
+  // Shipping
+  shippingMethod String  @db.VarChar(50) // "standard", "fast", "express"
+  shippingFee    Decimal @db.Decimal(10, 2)
+  
+  // Pricing
+  subtotal  Decimal @db.Decimal(10, 2)
+  discount  Decimal @db.Decimal(10, 2) @default(0)
+  total     Decimal @db.Decimal(10, 2)
+  
+  // Extra
+  voucherCode String? @db.VarChar(50)
+  note        String? @db.Text
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  paidAt    DateTime?
+  shippedAt DateTime?
+  deliveredAt DateTime?
+  cancelledAt DateTime?
+
+  // Relations
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  address   Address     @relation(fields: [addressId], references: [id], onDelete: Restrict)
+  items     OrderItem[]
+  statusHistory OrderStatusHistory[]
+
+  @@index([userId])
+  @@index([addressId])
+  @@index([status])
+  @@index([orderNumber])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  productId String
+  
+  // Snapshot giá tại thời điểm đặt hàng
+  productName  String  @db.VarChar(120)
+  productImage String? @db.Text
+  price        Decimal @db.Decimal(10, 2)
+  quantity     Int
+  subtotal     Decimal @db.Decimal(10, 2) // price * quantity
+  
+  createdAt DateTime @default(now())
+
+  // Relations
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+// ==================== ORDER STATUS HISTORY ====================
+model OrderStatusHistory {
+  id        String      @id @default(cuid())
+  orderId   String
+  status    OrderStatus
+  note      String?     @db.Text
+  createdAt DateTime    @default(now())
+
+  // Relations
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([createdAt])
+}
+
+// ==================== ENUMS ====================
+enum OrderStatus {
+  PENDING       // Chờ xác nhận
+  CONFIRMED     // Đã xác nhận
+  PROCESSING    // Đang xử lý
+  SHIPPING      // Đang giao
+  DELIVERED     // Đã giao
+  COMPLETED     // Hoàn thành
+  CANCELLED     // Đã hủy
+  REFUNDED      // Đã hoàn tiền
+}
+
+enum PaymentStatus {
+  UNPAID        // Chưa thanh toán
+  PAID          // Đã thanh toán
+  REFUNDED      // Đã hoàn tiền
+  FAILED        // Thanh toán thất bại
 }

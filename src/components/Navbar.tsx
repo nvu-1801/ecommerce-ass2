@@ -6,10 +6,12 @@ import {
   UserRound,
   LogOut,
   Sparkles,
+  ShoppingCart,
 } from "lucide-react";
 import { supabaseServer } from "@/lib/supabase/supabase-server";
 import NeedsLoginButton from "@/components/NeedsLoginButton";
 import { redirect } from "next/navigation";
+import CartButton from "@/components/cart/CartButton";
 
 export default async function Navbar() {
   const sb = await supabaseServer();
@@ -63,6 +65,9 @@ export default async function Navbar() {
             </span>
           </Link>
 
+          {/* Cart Button */}
+          <CartButton />
+
           {/* Nút Thêm mới */}
           {user ? (
             <Link
@@ -70,7 +75,7 @@ export default async function Navbar() {
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 shadow-lg shadow-violet-500/30 hover:shadow-xl hover:shadow-violet-500/40 transition-all duration-200 hover:-translate-y-0.5"
             >
               <PlusCircle size={18} strokeWidth={2.5} />
-              Thêm mới
+              <span className="hidden sm:inline">Thêm mới</span>
             </Link>
           ) : (
             <NeedsLoginButton

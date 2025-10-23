@@ -1,7 +1,9 @@
 // src/lib/prisma.ts
 import { PrismaClient } from "@prisma/client";
 
-const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
+const globalForPrisma = globalThis as unknown as {
+  prisma?: PrismaClient;
+};
 
 const isRender = !!process.env.RENDER;
 const isVercel = !!process.env.VERCEL;
@@ -20,3 +22,8 @@ export const prisma =
         ? ["query", "error", "warn"]
         : ["error"],
   });
+
+// ✅ Thêm dòng này để prevent multiple instances trong development
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = prisma;
+}
