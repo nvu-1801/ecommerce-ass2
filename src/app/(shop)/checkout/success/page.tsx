@@ -11,18 +11,44 @@ import {
   XCircle,
 } from "lucide-react";
 
+type OrderData = {
+  id: string;
+  orderNumber?: string;
+  total?: number;
+  paymentStatus?: string;
+  createdAt?: string;
+  // add other optional fields if needed
+};
+
+function isOrderData(u: unknown): u is OrderData {
+  if (typeof u !== "object" || u === null) return false;
+  const rec = u as Record<string, unknown>;
+  return typeof rec.id === "string";
+}
+
 function SuccessContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
-  const [order, setOrder] = useState<any>(null);
+  const [order, setOrder] = useState<unknown | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (orderId) {
-      // Load order from localStorage
-      const orders = JSON.parse(localStorage.getItem("mock_orders") || "[]");
-      const foundOrder = orders.find((o: any) => o.id === orderId);
-      setOrder(foundOrder);
+      // Load order from localStorage (parse as unknown)
+      const parsed = JSON.parse(
+        localStorage.getItem("mock_orders") || "[]"
+      ) as unknown;
+
+      if (Array.isArray(parsed)) {
+        const found = (parsed as unknown[]).find(
+          (o): o is OrderData => isOrderData(o) && o.id === orderId
+        );
+        setOrder(found ?? null);
+      } else {
+        setOrder(null);
+      }
+    } else {
+      setOrder(null);
     }
     setIsLoading(false);
   }, [orderId]);
@@ -44,7 +70,10 @@ function SuccessContent() {
     );
   }
 
-  if (!order) {
+  // Narrow order to OrderData | null for rendering
+  const ord = isOrderData(order) ? order : null;
+
+  if (!ord) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-violet-50 flex items-center justify-center p-4">
         <div className="max-w-2xl w-full">
@@ -99,7 +128,7 @@ function SuccessContent() {
                   Mã đơn hàng
                 </span>
                 <span className="font-mono font-bold text-gray-900">
-                  {order.orderNumber}
+                  {ord.orderNumber}
                 </span>
               </div>
 
@@ -108,7 +137,7 @@ function SuccessContent() {
                   Tổng tiền
                 </span>
                 <span className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
-                  {formatVND(order.total)}
+                  {formatVND(Number(ord.total ?? 0))}
                 </span>
               </div>
 
@@ -127,12 +156,12 @@ function SuccessContent() {
                 </span>
                 <span
                   className={`px-3 py-1 text-sm font-bold rounded-lg ${
-                    order.paymentStatus === "PAID"
+                    ord.paymentStatus === "PAID"
                       ? "bg-green-100 text-green-700"
                       : "bg-gray-100 text-gray-700"
                   }`}
                 >
-                  {order.paymentStatus === "PAID"
+                  {ord.paymentStatus === "PAID"
                     ? "Đã thanh toán"
                     : "Chưa thanh toán"}
                 </span>

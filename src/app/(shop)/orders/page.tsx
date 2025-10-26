@@ -120,6 +120,60 @@ type Order = {
   };
 };
 
+// helpers
+function toNumber(v: unknown): number {
+  if (typeof v === "number") return v;
+  if (typeof v === "string") {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  }
+  return 0;
+}
+
+// Type guards to replace `any` usage
+function isOrderItem(u: unknown): u is Order["items"][number] {
+  if (typeof u !== "object" || u === null) return false;
+  const r = u as Record<string, unknown>;
+  return (
+    typeof r.id === "string" &&
+    typeof r.productId === "string" &&
+    typeof r.productName === "string" &&
+    (typeof r.price === "number" || typeof r.price === "string") &&
+    typeof r.quantity === "number"
+  );
+}
+
+function isOrderStatus(s: unknown): s is OrderStatus {
+  return (
+    typeof s === "string" &&
+    [
+      "PENDING",
+      "CONFIRMED",
+      "PROCESSING",
+      "SHIPPING",
+      "DELIVERED",
+      "COMPLETED",
+      "CANCELLED",
+      "REFUNDED",
+    ].includes(s)
+  );
+}
+
+function isOrder(u: unknown): u is Order {
+  if (typeof u !== "object" || u === null) return false;
+  const r = u as Record<string, unknown>;
+  if (typeof r.id !== "string") return false;
+  if (typeof r.orderNumber !== "string") return false;
+  if (!isOrderStatus(r.status)) return false;
+  if (!(typeof r.total === "number" || typeof r.total === "string"))
+    return false;
+  if (!Array.isArray(r.items) || !r.items.every(isOrderItem)) return false;
+  if (typeof r.address !== "object" || r.address === null) return false;
+  const a = r.address as Record<string, unknown>;
+  if (typeof a.id !== "string") return false;
+  return true;
+}
+
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [filter, setFilter] = useState<OrderStatus | "ALL">("ALL");
@@ -127,19 +181,40 @@ export default function OrdersPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // ✅ Load orders from localStorage
+    // ✅ Load orders from localStorage (treat parsed data as unknown)
     const loadOrders = () => {
       setIsLoading(true);
       try {
-        const mockOrders = JSON.parse(
+        const parsed = JSON.parse(
           localStorage.getItem("mock_orders") || "[]"
-        );
+        ) as unknown;
+        const arr = Array.isArray(parsed) ? parsed : [];
 
-        // Convert string dates to Date objects
-        const ordersWithDates = mockOrders.map((order: any) => ({
-          ...order,
-          createdAt: new Date(order.createdAt),
-        }));
+        const ordersWithDates = arr
+          .map((o) => {
+            if (!isOrder(o)) return null;
+
+            // Use Record<string, unknown> to access optional raw fields safely
+            const raw = o as unknown as Record<string, unknown>;
+
+            const total = toNumber(raw.total ?? o.total);
+            const subtotal = toNumber(raw.subtotal ?? o.subtotal);
+            const discount = toNumber(raw.discount ?? o.discount);
+            const shippingFee = toNumber(raw.shippingFee ?? o.shippingFee);
+
+            return {
+              ...o,
+              total,
+              subtotal,
+              discount,
+              shippingFee,
+              createdAt:
+                typeof raw.createdAt === "string"
+                  ? new Date(raw.createdAt)
+                  : o.createdAt,
+            } as Order;
+          })
+          .filter((x): x is Order => x !== null);
 
         setOrders(ordersWithDates);
       } catch (error) {
